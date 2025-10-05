@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diary App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f0f4ff, #d9e2ff);
+            margin: 0;
+            padding-bottom: 80px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 30px auto;
+            background: white;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            border-radius: 12px;
+            text-align: left;
+            position: relative;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        h1 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+
+        input, textarea {
+            width: calc(100% - 20px);
+            margin: 10px 0;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s ease-in-out;
+        }
+
+        input:focus, textarea:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        textarea {
+            height: 120px;
+            resize: none;
+        }
+
+        button {
+            width: 100%;
+            background: #007bff;
+            color: white;
+            padding: 12px;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 18px;
+            transition: background 0.3s ease-in-out;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        input[type="file"] {
+            background: #eef3ff;
+            border: 1px dashed #007bff;
+            padding: 10px;
+            display: block;
+            cursor: pointer;
+            text-align: center;
+            width: 100%;
+            font-size: 14px;
+            border-radius: 6px;
+        }
+
+        input[type="file"]:hover {
+            background: #dde7ff;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .menu-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #077bf7;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 12px 0;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .menu-bar button {
+            background: transparent;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: color 0.3s ease-in-out;
+        }
+
+        .menu-bar button i {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .menu-bar button:hover {
+            color: #ffdd57;
+        }
+
+        .menu-bar button.active {
+            color: #ffdd57;
+            font-weight: bold;
+        }
+
+        .menu-bar button:focus {
+            outline: none;
+        }
+
+        /* Hidden state for sections */
+        .hidden {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        /* Active section styling */
+        .active-section {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .entry {
+            position: relative;
+            cursor: pointer;
+            background: #fff;
+            padding: 10px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            transition: transform 0.2s;
+        }
+
+        .entry:hover {
+            transform: scale(1.03);
+        }
+
+        .entry img, .entry video, .entry text {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .entry-title {
+            font-weight: bold;
+            margin-top: 5px 0;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255, 0, 0, 0.85);
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease-in-out, transform 0.2s;
+        }
+
+        .delete-btn:hover {
+            background: red;
+            transform: scale(1.1);
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .enlarged-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            width: 800px;
+        }
+
+        .enlarged-media-content {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .enlarged-media {
+            width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .entry-details {
+            width: 100%;
+            text-align: center;
+            padding: 0 10px;
+        }
+
+        .entry-details h3 {
+            margin-top: 10px;
+            color: #007bff;
+            font-size: 24px;
+            margin-bottom: 0;
+        }
+
+        .entry-details p {
+            color: #0a0a0a;
+            font-size: 16px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 5px;
+            right: 0px;
+            background: rgba(255, 0, 0, 0.8);
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease-in-out, transform 0.2s;
+        }
+
+        .close-btn:hover {
+            background: red;
+            transform: scale(1.1);
+        }
+
+        .close-btn i {
+            font-size: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .enlarged-container {
+                width: 95%;
+                padding: 20px;
+            }
+            
+            .enlarged-media {
+                max-height: 300px;
+            }
+            
+            .gallery {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Empty state styling */
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div id="home" class="container active-section">
+        <h1>📖 My Digital Diary</h1>
+        <p style="text-align: center; color: #666;">Write down your thoughts, moments, and memories.</p>
+        
+        <label for="title"><b>Entry Title</b></label>
+        <input type="text" id="title" placeholder="Give your entry a title..." required>
+        
+        <label for="content"><b>Your Thoughts</b></label>
+        <textarea id="content" placeholder="Write your entry here..." required></textarea>
+        
+        <label for="media"><b>Attach an Image/Video (Optional)</b></label>
+        <input type="file" id="media" accept="image/*,video/*">
+        
+        <button onclick="saveEntry()">Save Entry</button>
+        <button onclick="clearEntry()">Clear Entry</button>
+    </div>
+
+    <div id="images-album" class="container hidden">
+        <h1>Image Album</h1>
+        <div class="gallery" id="images-entries">
+            <div class="empty-state">No images yet. Add some from the Home section!</div>
+        </div>
+    </div>
+    <div id="text-album" class="container hidden">
+        <h1>text Album</h1>
+        <div class="gallery" id="text-entries">
+            <div class="empty-state">No entries yet. Add some from the Home section!</div>
+        </div>
+    </div>
+
+    <div id="videos-album" class="container hidden">
+        <h1>Video Album</h1>
+        <div class="gallery" id="videos-entries">
+            <div class="empty-state">No videos yet. Add some from the Home section!</div>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay">
+        <div class="enlarged-container">
+            <button class="close-btn" onclick="closeMedia()">
+                <i class="fas fa-times"></i>
+            </button>
+            <button class="clear-btn" onclick="clearMedia()">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="enlarged-media-content">
+                <div id="enlarged-media"></div>
+            </div>
+            
+            <div class="entry-details">
+                <h3 id="media-title"></h3>
+                <p id="media-content"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="menu-bar">
+        <button id="home-btn" onclick="showSection('home')" class="active">
+            <i class="fas fa-home"></i> Home
+        </button>
+        <button id="images-btn" onclick="showSection('images-album')">
+            <i class="fas fa-image"></i> Images
+        </button>
+        <button id="videos-btn" onclick="showSection('videos-album')">
+            <i class="fas fa-video"></i> Videos
+        </button>
+        <button id="text-btn" onclick="showSection('text-album')">
+            <i class="fas fa-text"></i> text
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            loadEntries();
+            showSection('home');
+        });
+        
+        function showSection(section) {
+            const sections = document.querySelectorAll(".container");
+            sections.forEach(sec => {
+                sec.classList.remove("active-section");
+                sec.classList.add("hidden");
+            });
+            
+            const activeSection = document.getElementById(section);
+            setTimeout(() => {
+                activeSection.classList.remove("hidden");
+                activeSection.classList.add("active-section");
+            }, 100);
+            
+            document.querySelectorAll(".menu-bar button").forEach(btn => btn.classList.remove("active"));
+            
+            if (section === "home") {
+                document.getElementById("home-btn").classList.add("active");
+            } else if (section === "images-album") {
+                document.getElementById("images-btn").classList.add("active");
+                loadEntries();
+            } else if (section === "videos-album") {
+                document.getElementById("videos-btn").classList.add("active");
+                loadEntries();
+            } else if (section === "text-album") {
+                document.getElementById("text-btn").classList.add("active");
+                loadEntries();
+            }
+        }
+        
+        function saveEntry() {
+            const title = document.getElementById("title").value.trim();
+            const content = document.getElementById("content").value.trim();
+            const mediaInput = document.getElementById("media").files[0];
+            
+            if (!title || !content) {
+                alert("Please fill in title and content fields.");
+                return;
+            }
+            
+            if (!mediaInput) {
+                saveEntryToStorage(title, content, "", "");
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                saveEntryToStorage(title, content, e.target.result, mediaInput.type);
+            };
+            reader.onerror = function() {
+                alert("Error reading the file. Please try again.");
+            };
+            reader.readAsDataURL(mediaInput);
+        }
+        
+        function saveEntryToStorage(title, content, mediaUrl, mediaType) {
+            let entries = JSON.parse(localStorage.getItem("diaryEntries")) || [];
+            entries.push({
+                id: Date.now(),
+                title,
+                content,
+                mediaUrl,
+                mediaType
+            });
+            localStorage.setItem("diaryEntries", JSON.stringify(entries));
+            
+            // Reset form
+            document.getElementById("title").value = "";
+            document.getElementById("content").value = "";
+            document.getElementById("media").value = "";
+            
+            loadEntries();
+        }
+        
+        function loadEntries() {
+            const imagesContainer = document.getElementById("images-entries");
+            const videosContainer = document.getElementById("videos-entries");
+            const textContainer = document.getElementById("text-entries");
+            
+            // Clear existing entries but keep empty state if no entries
+            imagesContainer.innerHTML = "";
+            videosContainer.innerHTML = "";
+            textContainer.innerHTML = "";
+            
+            const entries = JSON.parse(localStorage.getItem("diaryEntries")) || [];
+            
+            if (entries.length === 0) {
+                imagesContainer.innerHTML = '<div class="empty-state">No images yet. Add some from the Home section!</div>';
+                videosContainer.innerHTML = '<div class="empty-state">No videos yet. Add some from the Home section!</div>';
+                textContainer.innerHTML = '<div class="empty-state">No entries yet. Add some from the Home section!</div>';
+                return;
+            }
+            
+            let hasImages = false;
+            let hasVideos = false;
+            
+            entries.forEach(entry => {
+                if (!entry.mediaUrl) return;
+                
+                const entryDiv = document.createElement("div");
+                entryDiv.classList.add("entry");
+                entryDiv.innerHTML = `
+                    <p class="entry-title">${entry.title}</p>
+                    <${entry.mediaType.startsWith("image") ? "img" : "video"} 
+                    src="${entry.mediaUrl}" onclick='expandMedia(${entry.id})'></${entry.mediaType.startsWith("image") ? "img" : "video"}> 
+                    <button class="delete-btn" onclick="deleteEntry(${entry.id}, event)">🗑️</button>
+                `;
+                
+                if (entry.mediaType.startsWith("image")) {
+                    imagesContainer.appendChild(entryDiv);
+                    hasImages = true;
+                } else if (entry.mediaType.startsWith("video")) {
+                    videosContainer.appendChild(entryDiv);
+                    hasVideos = true;
+                }
+                else if (entry.mediaType.startsWith("text")) {
+                    textContainer.appendChild(entryDiv);
+                    hastext = true;
+                }
+            });
+            
+            if (!hasImages) {
+                imagesContainer.innerHTML = '<div class="empty-state">No images yet. Add some from the Home section!</div>';
+            }
+            
+            if (!hasVideos) {
+                videosContainer.innerHTML = '<div class="empty-state">No videos yet. Add some from the Home section!</div>';
+            }
+            if (!hastext) {
+                textContainer.innerHTML = '<div class="empty-state">No entries yet. Add some from the Home section!</div>';
+            }
+        }
+        
+        function expandMedia(entryId) {
+            const entries = JSON.parse(localStorage.getItem("diaryEntries")) || [];
+            const entry = entries.find(e => e.id === entryId);
+            
+            if (!entry) return;
+            
+            document.getElementById("media-title").textContent = entry.title;
+            document.getElementById("media-content").textContent = entry.content;
+            
+            const mediaContainer = document.getElementById("enlarged-media");
+            mediaContainer.innerHTML = '';
+            
+            if (entry.mediaUrl) {
+                const mediaElement = document.createElement(entry.mediaType.startsWith("image") ? "img" : "video");
+                mediaElement.src = entry.mediaUrl;
+                mediaElement.classList.add("enlarged-media");
+                
+                if (entry.mediaType.startsWith("video")) {
+                    mediaElement.controls = true;
+                    mediaElement.autoplay = true;
+                }
+                
+                mediaContainer.appendChild(mediaElement);
+            } else {
+                mediaContainer.innerHTML = "<p>No media attached</p>";
+            }
+            
+            document.getElementById("overlay").style.display = "flex";
+        }
+        
+        function deleteEntry(entryId, event) {
+            if (event) event.stopPropagation();
+            
+            if (confirm("Are you sure you want to delete this entry?")) {
+                let entries = JSON.parse(localStorage.getItem("diaryEntries")) || [];
+                entries = entries.filter(entry => entry.id !== entryId);
+                localStorage.setItem("diaryEntries", JSON.stringify(entries));
+                loadEntries();
+                closeMedia();
+            }
+        }
+
+        function closeMedia() {
+            document.getElementById("overlay").style.display = "none";
+            // Pause any playing videos when closing
+            const videos = document.querySelectorAll("#enlarged-media video");
+            videos.forEach(video => {
+                video.pause();
+                video.currentTime = 0;
+            });
+        }
+    </script>
+</body>
+</html>
